@@ -1,93 +1,92 @@
 import React from 'react';
 import {
-  Image,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+	Dimensions
 } from 'react-native';
-import { WebBrowser } from 'expo';
 
-import { MonoText } from '../components/StyledText';
+import { VictoryPie, VictoryAnimation, VictoryLabel   } from "victory-native";
+import Svg from 'react-native-svg';
+const { width } = Dimensions.get('window');
+
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
 
-  render() {
+	constructor() {
+		super();
+		this.state = {
+			percent: 25, data: this.getData(0)
+		};
+	}
+
+	getData(percent) {
+		return [{ x: 1, y: percent }, { x: 2, y: 100 - percent }];
+	}
+
+	componentDidMount() {
+		let percent = 25;
+		this.setStateInterval = window.setInterval(() => {
+			percent += (Math.random() * 25);
+			percent = (percent > 100) ? 0 : percent;
+			this.setState({
+				percent, data: this.getData(percent)
+			});
+		}, 2000);
+	}
+
+	componentWillUnmount() {
+		window.clearInterval(this.setStateInterval);
+	}
+
+
+	render() {
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={
-                __DEV__
-                  ? require('../assets/images/robot-dev.png')
-                  : require('../assets/images/robot-prod.png')
-              }
-              style={styles.welcomeImage}
-            />
+          <View style={styles.header}>
+			<Text>Tzaban Residence</Text>
+	          <Text>Zevulun St 20, Tel Aviv Yafo</Text>
           </View>
-
-          <View style={styles.getStartedContainer}>
-            {this._maybeRenderDevelopmentModeWarning()}
-
-            <Text style={styles.getStartedText}>Get started by opening</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
-            </View>
-
-            <Text style={styles.getStartedText}>
-              Change this text and your app will automatically reload.
-            </Text>
-          </View>
-
-          <View style={styles.helpContainer}>
-            <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-            </TouchableOpacity>
-          </View>
+	   <Svg viewBox="0 0 400 400" height={400} width={width}>
+		        <VictoryPie
+			        standalone={false}
+			        animate={{ duration: 1000 }}
+			        width={400} height={400}
+			        data={this.state.data}
+			        innerRadius={120}
+			        cornerRadius={25}
+			        labels={() => null}
+			        style={{
+				        data: { fill: (d) => {
+						        const color = d.y > 30 ? "green" : "red";
+						        return d.x === 1 ? color : "transparent";
+					        }
+				        }
+			        }}
+		        />
+		        <VictoryAnimation duration={1000} data={this.state}>
+			        {(newProps) => {
+				        return (
+					        <VictoryLabel
+						        textAnchor="middle" verticalAnchor="middle"
+						        x={200} y={200}
+						        text={`${Math.round(newProps.percent)}%`}
+						        style={{ fontSize: 45 }}
+					        />
+				        );
+			        }}
+		        </VictoryAnimation>
+	        </Svg>
       </ScrollView>
       </View>
     );
   }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
-    }
-  }
-
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
-
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
 }
 
 const styles = StyleSheet.create({

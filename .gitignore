@@ -6,3 +6,10 @@ npm-debug.*
 *.key
 *.mobileprovision
 *.idea
+
+# Android
+.idea
+.gradle
+local.properties
+*.iml
+/android/
